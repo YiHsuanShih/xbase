@@ -40,6 +40,7 @@ from bag.layout.template import TemplateDB
 
 from xbase.layout.mos.base import MOSBasePlaceInfo, MOSBase
 from xbase.schematic.momcap_core import xbase__momcap_core
+import math
 
 
 class MOMCapOnMOS(MOSBase):
@@ -60,7 +61,9 @@ class MOMCapOnMOS(MOSBase):
             bot_layer='MOM cap bottom layer.',
             top_layer='MOM cap top layer.',
             width='MOM cap width, in resolution units.',
+            height='MOM cap height, in resolution units',
             margin='margin between cap and boundary, in resolution units.',
+            margin_h='margin between cap and bundary in y, in resolution units',
             port_tr_w='MOM cap port track width, in number of tracks.',
             options='MOM cap layout options.',
             half_blk_x='True to allow half horizontal blocks.',
@@ -75,6 +78,7 @@ class MOMCapOnMOS(MOSBase):
             options=None,
             half_blk_x=True,
             half_blk_y=True,
+            margin_h=0,
         )
 
     def draw_layout(self) -> None:
@@ -90,7 +94,9 @@ class MOMCapOnMOS(MOSBase):
         bot_layer: int = self.params['bot_layer']
         top_layer: int = self.params['top_layer']
         width: int = self.params['width']
+        height: int = self.params['height']
         margin: int = self.params['margin']
+        margin_h: int = self.params['margin_h']
         port_tr_w: int = self.params['port_tr_w']
         options: Optional[Mapping[str, Any]] = self.params['options']
         half_blk_x: bool = self.params['half_blk_x']
@@ -100,7 +106,7 @@ class MOMCapOnMOS(MOSBase):
         w_blk, h_blk = grid.get_block_size(top_layer, half_blk_x=half_blk_x,
                                            half_blk_y=half_blk_y)
         w_tot = -(-w_tot // w_blk) * w_blk
-        h_tot = self.place_info.height
+        h_tot = height
 
         # set size
         num_cols = -(-w_tot // self.sd_pitch)
@@ -116,7 +122,7 @@ class MOMCapOnMOS(MOSBase):
         # draw cap
         cap_xl = (self.bound_box.w - width) // 2
         cap_yb = (self.bound_box.h - h_tot) // 2
-        cap_box = BBox(cap_xl, cap_yb, cap_xl + width, cap_yb + h_tot)
+        cap_box = BBox(cap_xl, cap_yb + margin_h, cap_xl + width, cap_yb + h_tot - margin_h)
         num_layer = top_layer - bot_layer + 1
         options = options or {}
         cw_list: List[Tuple[Tuple[str, str], Tuple[str, str], BBoxArray, BBoxArray]] = []
